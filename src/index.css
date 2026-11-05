@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@layer utilities {
+  /* Hide scrollbar for clean horizontal nav */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* ===== Efek Glow saat Hover ===== */
+
+  /* Kartu utama: terangkat sedikit + cincin & bayangan hijau lembut */
+  .glow-card {
+    transition: box-shadow 220ms ease, transform 220ms ease, border-color 220ms ease;
+  }
+  .glow-card:hover {
+    transform: translateY(-3px);
+    border-color: rgb(52 211 153 / 0.55);
+    box-shadow:
+      0 0 0 1px rgb(16 185 129 / 0.18),
+      0 10px 30px -12px rgb(5 150 105 / 0.35),
+      0 0 22px -4px rgb(16 185 129 / 0.45);
+  }
+
+  /* Kartu kecil / item daftar */
+  .glow-card-sm {
+    transition: box-shadow 200ms ease, transform 200ms ease, border-color 200ms ease;
+  }
+  .glow-card-sm:hover {
+    transform: translateY(-2px);
+    border-color: rgb(52 211 153 / 0.45);
+    box-shadow:
+      0 0 0 1px rgb(16 185 129 / 0.15),
+      0 6px 18px -10px rgb(5 150 105 / 0.4),
+      0 0 14px -4px rgb(16 185 129 / 0.35);
+  }
+
+  /* Tombol */
+  .glow-btn {
+    transition: box-shadow 200ms ease, transform 150ms ease, background-color 200ms ease;
+  }
+  .glow-btn:hover {
+    box-shadow:
+      0 6px 18px -6px rgb(16 185 129 / 0.55),
+      0 0 16px -2px rgb(16 185 129 / 0.45);
+  }
+  .glow-btn:active {
+    transform: translateY(1px);
+  }
+
+  /* Tombol ikon / sekunder bernuansa netral */
+  .glow-btn-neutral:hover {
+    box-shadow:
+      0 6px 16px -8px rgb(15 23 42 / 0.45),
+      0 0 12px -4px rgb(100 116 139 / 0.45);
+  }
+
+  /* Tab navigasi */
+  .glow-tab {
+    transition: box-shadow 200ms ease, background-color 200ms ease, color 200ms ease;
+  }
+  .glow-tab:hover {
+    box-shadow:
+      0 0 0 1px rgb(16 185 129 / 0.22),
+      0 0 14px -4px rgb(16 185 129 / 0.5);
+  }
+
+  /* Baris tabel */
+  .glow-row {
+    transition: background-color 180ms ease, box-shadow 180ms ease;
+  }
+  .glow-row:hover {
+    background-color: rgb(236 253 245 / 0.75);
+    box-shadow: inset 3px 0 0 0 rgb(16 185 129 / 0.75);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .glow-card,
+    .glow-card-sm,
+    .glow-btn,
+    .glow-btn-neutral,
+    .glow-tab,
+    .glow-row {
+      transition: none;
+    }
+    .glow-card:hover,
+    .glow-card-sm:hover,
+    .glow-btn:active {
+      transform: none;
+    }
+  }
+}
+
+@media print {
+  /* When printing, hide background chrome and show clean printable cards */
+  header, footer, nav, button, .no-print {
+    display: none !important;
+  }
+
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  .printable-receipt {
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}

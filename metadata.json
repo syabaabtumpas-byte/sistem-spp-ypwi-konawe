@@ -1,0 +1,6 @@
+{
+  "name": "Sistem SPP YPWI Konawe",
+  "description": "Sistem Informasi Pembayaran SPP Yayasan Pendidikan Wahdah Islamiyah Konawe dengan notifikasi WhatsApp otomatis, kuitansi PDF, dan laporan keuangan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

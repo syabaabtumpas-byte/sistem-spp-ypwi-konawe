@@ -1,0 +1,20 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Metadata agen, AI Studio & cache lokal
+.freebuff/
+.aistudio/
+.vite/
+*.local
+
+# Artefak uji (tangkapan layar)
+screenshots/
+
+# Lockfile resmi proyek: package-lock.json (npm)
+bun.lock
