@@ -1,5 +1,6 @@
 import { Siswa, Pembayaran, WhatsAppLog, FoundationSettings, ItemTagihanBulan, BulanNama, AppUser } from '../types';
 import { INITIAL_SISWA, INITIAL_PEMBAYARAN, INITIAL_SETTINGS, INITIAL_WA_LOGS, LIST_BULAN, INITIAL_USERS } from '../data/initialData';
+import type { CloudDataKey } from './cloud';
 
 const KEYS = {
   SISWA: 'ypwi_siswa_list_v1',
@@ -41,24 +42,7 @@ export const storage = {
   getUsers(): AppUser[] {
     try {
       const data = localStorage.getItem(KEYS.USERS);
-      if (data) {
-        const parsed: AppUser[] = JSON.parse(data);
-        // Ensure initial predefined roles exist
-        const map = new Map<string, AppUser>();
-        parsed.forEach(u => map.set(u.id, u));
-        let changed = false;
-        INITIAL_USERS.forEach(u => {
-          if (!map.has(u.id)) {
-            map.set(u.id, u);
-            changed = true;
-          }
-        });
-        const merged = Array.from(map.values());
-        if (changed) {
-          localStorage.setItem(KEYS.USERS, JSON.stringify(merged));
-        }
-        return merged;
-      }
+      if (data) return JSON.parse(data) as AppUser[];
     } catch (e) {
       console.error('Error reading users from localStorage', e);
     }
@@ -133,23 +117,7 @@ export const storage = {
   getStudents(): Siswa[] {
     try {
       const data = localStorage.getItem(KEYS.SISWA);
-      if (data) {
-        const parsed: Siswa[] = JSON.parse(data);
-        const map = new Map<string, Siswa>();
-        parsed.forEach(s => map.set(s.id, s));
-        let changed = false;
-        INITIAL_SISWA.forEach(s => {
-          if (!map.has(s.id)) {
-            map.set(s.id, s);
-            changed = true;
-          }
-        });
-        const merged = Array.from(map.values());
-        if (changed) {
-          localStorage.setItem(KEYS.SISWA, JSON.stringify(merged));
-        }
-        return merged;
-      }
+      if (data) return JSON.parse(data) as Siswa[];
     } catch (e) {
       console.error('Error reading students from localStorage', e);
     }
@@ -294,6 +262,53 @@ export const storage = {
     localStorage.setItem(KEYS.SETTINGS, JSON.stringify(INITIAL_SETTINGS));
     localStorage.setItem(KEYS.WA_LOGS, JSON.stringify(INITIAL_WA_LOGS));
     window.dispatchEvent(new Event('ypwi_data_changed'));
+  },
+
+  /** Membaca satu kelompok data sesuai nama dokumen cloud. */
+  readCloudPayload(key: CloudDataKey): unknown {
+    switch (key) {
+      case 'students': return this.getStudents();
+      case 'payments': return this.getPayments();
+      case 'settings': return this.getSettings();
+      case 'waLogs': return this.getWhatsAppLogs();
+      case 'users': return this.getUsers();
+      default: return null;
+    }
+  },
+
+  /**
+   * Menulis data dari cloud ke cache lokal.
+   * silent = true bila pemanggil sudah memuat ulang datanya sendiri (menghindari
+   * event berulang yang memicu pengiriman balik ke server).
+   */
+  applyCloudPayload(key: CloudDataKey, payload: unknown, silent = false): void {
+    if (payload === null || payload === undefined) return;
+
+    switch (key) {
+      case 'students':
+        if (Array.isArray(payload)) localStorage.setItem(KEYS.SISWA, JSON.stringify(payload));
+        break;
+      case 'payments':
+        if (Array.isArray(payload)) localStorage.setItem(KEYS.PEMBAYARAN, JSON.stringify(payload));
+        break;
+      case 'settings':
+        if (typeof payload === 'object' && !Array.isArray(payload)) {
+          localStorage.setItem(KEYS.SETTINGS, JSON.stringify(payload));
+        }
+        break;
+      case 'waLogs':
+        if (Array.isArray(payload)) localStorage.setItem(KEYS.WA_LOGS, JSON.stringify(payload));
+        break;
+      case 'users':
+        if (Array.isArray(payload)) localStorage.setItem(KEYS.USERS, JSON.stringify(payload));
+        break;
+      default:
+        return;
+    }
+
+    if (silent) return;
+    window.dispatchEvent(new Event('ypwi_data_changed'));
+    if (key === 'users') window.dispatchEvent(new Event('ypwi_users_changed'));
   },
 
   exportDatabase(): string {

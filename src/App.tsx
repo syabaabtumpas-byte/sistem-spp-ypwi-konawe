@@ -12,6 +12,7 @@ import { AuthModal } from './components/AuthModal';
 import { LoginPage } from './components/LoginPage';
 import { UserProfilePage } from './components/UserProfilePage';
 import { storage } from './services/storage';
+import { getCloudClient, isCloudEnabled, startCloudSync, stopCloudSync } from './services/cloud';
 import { Siswa, Pembayaran, FoundationSettings, WhatsAppLog, AppUser } from './types';
 import { LogIn, ArrowLeft, Shield } from 'lucide-react';
 
@@ -97,6 +98,33 @@ export default function App() {
       window.removeEventListener('hashchange', handleHash);
     };
   }, []);
+
+  // Sinkronisasi cloud: hanya aktif bila VITE_SUPABASE_URL & VITE_SUPABASE_ANON_KEY diisi
+  useEffect(() => {
+    if (!currentUser || !isCloudEnabled()) return;
+    const client = getCloudClient();
+    if (!client || !client.hasSession()) return;
+
+    const engine = startCloudSync({
+      client,
+      readLocal: (key) => storage.readCloudPayload(key),
+      writeLocal: (key, payload) => {
+        storage.applyCloudPayload(key, payload, true);
+        loadData();
+      },
+    });
+
+    const handleLocalChange = () => engine?.markDirty();
+    window.addEventListener('ypwi_data_changed', handleLocalChange);
+    window.addEventListener('ypwi_users_changed', handleLocalChange);
+
+    return () => {
+      window.removeEventListener('ypwi_data_changed', handleLocalChange);
+      window.removeEventListener('ypwi_users_changed', handleLocalChange);
+      stopCloudSync();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id]);
 
   // Action handlers
   const handleOpenNewPayment = (studentId?: string) => {

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { AppUser, UserRole } from '../types';
 import { storage } from '../services/storage';
+import { getCloudClient, isCloudEnabled } from '../services/cloud';
 
 interface AuthModalProps {
   currentUser: AppUser | null;
@@ -41,8 +42,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [regSuccess, setRegSuccess] = useState<string | null>(null);
 
   const users = storage.getUsers();
+  const cloudClient = getCloudClient();
+  const cloudMode = isCloudEnabled();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
@@ -56,7 +59,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
-    if (user.password && user.password !== passwordInput.trim()) {
+    // Pada mode cloud, kata sandi diverifikasi oleh server (Supabase Auth).
+    if (!cloudClient && user.password && user.password !== passwordInput.trim()) {
       setErrorMsg('Password yang Anda masukkan salah.');
       return;
     }
@@ -71,6 +75,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
+    if (cloudClient) {
+      if (!passwordInput.trim()) {
+        setErrorMsg('Masukkan kata sandi akun cloud Anda.');
+        return;
+      }
+      try {
+        await cloudClient.signIn(user.email, passwordInput.trim());
+      } catch (err) {
+        setErrorMsg(
+          `Login cloud gagal: ${err instanceof Error ? err.message : 'periksa email dan kata sandi Anda.'}`
+        );
+        return;
+      }
+    }
+
     // Success
     storage.setCurrentUser(user);
     onLoginSuccess(user);
@@ -78,6 +97,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   const handleQuickLogin = (targetUser: AppUser) => {
+    if (cloudMode) {
+      setErrorMsg('Mode cloud aktif: tombol masuk cepat dinonaktifkan. Keluar lalu masuk dengan email & kata sandi Anda.');
+      return;
+    }
     if (targetUser.status === 'MENUNGGU_PERSETUJUAN') {
       alert(`Akun "${targetUser.namaLengkap}" masih menunggu persetujuan Administrator.`);
       return;
@@ -90,6 +113,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+
+    if (cloudMode) {
+      setErrorMsg('Mode cloud aktif: akun baru dibuat oleh Administrator melalui dashboard Supabase.');
+      return;
+    }
 
     if (!regNama || !regUsername || !regPassword) {
       setErrorMsg('Lengkapi Nama, Username, dan Password!');

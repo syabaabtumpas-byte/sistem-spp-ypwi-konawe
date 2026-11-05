@@ -32,6 +32,11 @@ jobs:
 
       - name: Build aplikasi
         run: npm run build
+        env:
+          # Mode cloud (opsional). Isi di Settings -> Secrets and variables -> Actions.
+          # Kosong = aplikasi tetap memakai mode lokal (localStorage).
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Unggah hasil build
         uses: actions/upload-pages-artifact@v3

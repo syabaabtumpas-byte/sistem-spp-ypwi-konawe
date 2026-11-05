@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   X, 
   Building2, 
   CreditCard, 
   Save, 
   Database, 
+  Cloud,
+  RefreshCw,
   Download, 
   Upload, 
   Plus, 
@@ -24,6 +26,7 @@ import {
 } from 'lucide-react';
 import { FoundationSettings, RekeningBank, UnitSekolahConfig, AppUser, UserRole } from '../types';
 import { storage } from '../services/storage';
+import { getSyncStatus, syncNow } from '../services/cloud';
 import { DEFAULT_WIZ_LOGO, DEFAULT_PEMBANGUNAN_LOGO } from '../data/initialData';
 
 interface SettingsModalProps {
@@ -43,6 +46,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'IDENTITY' | 'SCHOOLS' | 'USERS' | 'BANKS' | 'DATABASE'>('SCHOOLS');
   const [formData, setFormData] = useState<FoundationSettings>({ ...settings });
+  const [syncInfo, setSyncInfo] = useState(getSyncStatus());
+
+  useEffect(() => {
+    const handleSyncStatus = () => setSyncInfo(getSyncStatus());
+    window.addEventListener('ypwi_sync_status', handleSyncStatus);
+    return () => window.removeEventListener('ypwi_sync_status', handleSyncStatus);
+  }, []);
   const [daftarSekolah, setDaftarSekolah] = useState<UnitSekolahConfig[]>([...(settings.daftarSekolah || [])]);
   const [rekeningList, setRekeningList] = useState<RekeningBank[]>([...settings.rekeningList]);
   const [successToast, setSuccessToast] = useState(false);
@@ -1158,6 +1168,51 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     />
                   </label>
                 </div>
+              </div>
+
+              {/* Sinkronisasi data bersama (opsional) */}
+              <div className="p-4 bg-emerald-50/70 rounded-2xl border border-emerald-200 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 font-bold text-slate-900 text-xs">
+                    <Cloud className="w-4 h-4 text-emerald-600" />
+                    <span>Penyimpanan Data Bersama (Cloud)</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                    syncInfo.mode === 'cloud'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-slate-200 text-slate-700'
+                  }`}>
+                    {syncInfo.mode === 'cloud' ? 'MODE CLOUD' : 'MODE LOKAL'}
+                  </span>
+                </div>
+
+                <p className="text-slate-600 text-[11px] leading-relaxed">
+                  {syncInfo.mode === 'cloud'
+                    ? 'Data tersimpan di database bersama, sehingga semua pengurus yang login melihat data yang sama dari perangkat mana pun.'
+                    : 'Aplikasi berjalan tanpa database online: data hanya ada di browser ini. Isi VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY lalu build ulang untuk mengaktifkan mode cloud.'}
+                </p>
+
+                {syncInfo.mode === 'cloud' && (
+                  <>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => { void syncNow(); }}
+                        disabled={syncInfo.state === 'syncing'}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white rounded-lg font-bold text-[11px] cursor-pointer"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${syncInfo.state === 'syncing' ? 'animate-spin' : ''}`} />
+                        <span>{syncInfo.state === 'syncing' ? 'Menyinkronkan...' : 'Sinkronkan Sekarang'}</span>
+                      </button>
+                      <span className="text-[11px] text-slate-500">
+                        Sinkron terakhir: {syncInfo.lastSyncAt ? new Date(syncInfo.lastSyncAt).toLocaleTimeString('id-ID') : 'belum'}
+                      </span>
+                    </div>
+                    {syncInfo.lastError && (
+                      <p className="text-[11px] text-rose-700">Gagal sinkron: {syncInfo.lastError}</p>
+                    )}
+                  </>
+                )}
               </div>
 
               <div className="p-4 bg-rose-50 rounded-2xl border border-rose-200 space-y-2">
