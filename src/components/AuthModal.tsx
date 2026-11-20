@@ -23,7 +23,6 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
-  currentUser,
   onClose,
   onLoginSuccess,
 }) => {
@@ -93,20 +92,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     // Success
     storage.setCurrentUser(user);
     onLoginSuccess(user);
-    onClose();
-  };
-
-  const handleQuickLogin = (targetUser: AppUser) => {
-    if (cloudMode) {
-      setErrorMsg('Mode cloud aktif: tombol masuk cepat dinonaktifkan. Keluar lalu masuk dengan email & kata sandi Anda.');
-      return;
-    }
-    if (targetUser.status === 'MENUNGGU_PERSETUJUAN') {
-      alert(`Akun "${targetUser.namaLengkap}" masih menunggu persetujuan Administrator.`);
-      return;
-    }
-    storage.setCurrentUser(targetUser);
-    onLoginSuccess(targetUser);
     onClose();
   };
 
@@ -263,57 +248,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <span>Masuk ke Aplikasi</span>
                 </button>
               </form>
-
-              {/* Quick Login Switcher for Demonstration & Testing */}
-              <div className="pt-3 border-t border-slate-100 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider">
-                    Pilih Cepat Akun Peran (Demo Langsung):
-                  </span>
-                  <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
-                    1-Click Login
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 gap-1.5">
-                  {users.filter(u => u.status === 'AKTIF').map((u) => {
-                    const isCurrent = currentUser?.id === u.id;
-                    return (
-                      <button
-                        key={u.id}
-                        type="button"
-                        onClick={() => handleQuickLogin(u)}
-                        className={`p-2.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
-                          isCurrent
-                            ? 'bg-emerald-50 border-emerald-500 ring-1 ring-emerald-500'
-                            : 'bg-slate-50 hover:bg-emerald-50/50 border-slate-200'
-                        }`}
-                      >
-                        <div className="min-w-0 pr-2">
-                          <p className="font-bold text-slate-900 text-xs truncate">
-                            {u.namaLengkap}
-                          </p>
-                          <p className="text-[10px] text-slate-500 font-mono">
-                            Username: <strong>{u.username}</strong> • Peran: <span className="font-semibold text-emerald-700">{u.role}</span>
-                          </p>
-                        </div>
-
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
-                          u.role === 'ADMIN'
-                            ? 'bg-purple-100 text-purple-800'
-                            : u.role === 'BENDAHARA'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : u.role === 'KASIR'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {isCurrent ? '✓ Aktif' : 'Masuk'}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
             </div>
           )}
 

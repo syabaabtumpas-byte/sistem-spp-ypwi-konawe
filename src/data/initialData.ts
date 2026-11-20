@@ -10,7 +10,7 @@ export const INITIAL_USERS: AppUser[] = [
     username: 'admin',
     namaLengkap: 'Ust. Fathurrahman (Administrator Sistem)',
     email: 'admin.it@wahdah.or.id',
-    password: 'admin',
+    password: 'Ypwi!Konawe2026#SPP',
     role: 'ADMIN',
     status: 'AKTIF',
     noWa: '081242338890',

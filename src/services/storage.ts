@@ -42,7 +42,25 @@ export const storage = {
   getUsers(): AppUser[] {
     try {
       const data = localStorage.getItem(KEYS.USERS);
-      if (data) return JSON.parse(data) as AppUser[];
+      if (data) {
+        const users = JSON.parse(data) as AppUser[];
+        // Data lama di browser masih memakai kata sandi bawaan "admin".
+        // Ganti ke kata sandi bawaan yang baru, kecuali sudah diubah pengguna.
+        const adminDefault = INITIAL_USERS.find(u => u.id === 'usr-admin');
+        let changed = false;
+        const migrated = users.map(u => {
+          if (u.id === 'usr-admin' && u.password === 'admin' && adminDefault?.password) {
+            changed = true;
+            return { ...u, password: adminDefault.password };
+          }
+          return u;
+        });
+        if (changed) {
+          localStorage.setItem(KEYS.USERS, JSON.stringify(migrated));
+          return migrated;
+        }
+        return users;
+      }
     } catch (e) {
       console.error('Error reading users from localStorage', e);
     }

@@ -28,7 +28,7 @@ npm run preview  # pratinjau hasil build
 npm run lint     # pemeriksaan tipe (tsc --noEmit)
 ```
 
-Tidak diperlukan API key. Halaman login menyediakan tombol **1-Klik Masuk** untuk tiap peran demo.
+Tidak diperlukan API key. Login selalu memakai **username/email + kata sandi**; tidak ada tombol masuk cepat yang melewati autentikasi. Akun awal beserta kata sandi bawaannya didefinisikan di `src/data/initialData.ts` — segera ganti setelah login pertama lewat **Pengaturan → Pengguna**.
 
 ## Deploy ke GitHub Pages
 
@@ -71,7 +71,7 @@ Bila `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` diisi, aplikasi memakai da
 
 Cara kerjanya:
 
-- Login memakai email + kata sandi akun Supabase; tombol masuk cepat dinonaktifkan agar tidak melewati autentikasi.
+- Login memakai email + kata sandi akun Supabase.
 - Email akun harus terdaftar pada daftar pengguna aplikasi (**Pengaturan → Pengguna**) dengan status AKTIF agar peran dan hak aksesnya dikenali.
 - Data disinkronkan dua arah: perubahan dikirim beberapa saat setelah disimpan, dan data terbaru diambil setiap 20 detik serta saat aplikasi dibuka.
 - Bila server belum punya data (instalasi pertama), data lokal diunggah sebagai isi awal.

@@ -95,19 +95,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     onLoginSuccess(user);
   };
 
-  const handleQuickLogin = (targetUser: AppUser) => {
-    if (cloudMode) {
-      setErrorMsg('Mode cloud aktif: masukkan email dan kata sandi akun Anda untuk masuk.');
-      return;
-    }
-    if (targetUser.status === 'MENUNGGU_PERSETUJUAN') {
-      alert(`Akun "${targetUser.namaLengkap}" masih berstatus MENUNGGU PERSETUJUAN Administrator.`);
-      return;
-    }
-    storage.setCurrentUser(targetUser);
-    onLoginSuccess(targetUser);
-  };
-
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -264,49 +251,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   <span>Masuk ke Sistem Aplikasi</span>
                 </button>
               </form>
-
-              {/* Quick Login Buttons (Pre-configured authorized accounts for testing) */}
-              <div className="pt-4 border-t border-slate-100 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                    Pilih Cepat Akun Peran (Demo Langsung):
-                  </span>
-                  <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
-                    1-Klik Masuk
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {users.filter(u => u.status === 'AKTIF').slice(0, 5).map((u) => (
-                    <button
-                      key={u.id}
-                      type="button"
-                      onClick={() => handleQuickLogin(u)}
-                      className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 text-left transition-all cursor-pointer flex items-center justify-between"
-                    >
-                      <div className="min-w-0 pr-1">
-                        <p className="font-bold text-slate-900 text-xs truncate">
-                          {u.namaLengkap.split('(')[0]}
-                        </p>
-                        <p className="text-[10px] text-slate-500 font-mono">
-                          User: <strong>{u.username}</strong>
-                        </p>
-                      </div>
-                      <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold shrink-0 ${
-                        u.role === 'ADMIN'
-                          ? 'bg-purple-100 text-purple-800'
-                          : u.role === 'BENDAHARA'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : u.role === 'KASIR'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        {u.role}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
 
             </div>
           ) : (
